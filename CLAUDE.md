@@ -79,31 +79,28 @@ All variables live in `playbook.yml` under `vars:`. Key variables:
 
 ## Code Conventions
 
-### Ansible Syntax (Legacy)
+### Ansible Syntax
 
-This project uses **pre-Ansible 2.0 syntax**. When making changes, maintain consistency with:
+This project uses modern Ansible YAML dict syntax:
 
-- **Module invocation**: `key=value` inline format, not YAML dict format
+- **Module invocation**: YAML dict format
   ```yaml
-  # This project's style:
-  homebrew: name={{ item }} state=latest
-
-  # NOT this:
-  ansible.builtin.homebrew:
+  homebrew:
     name: "{{ item }}"
     state: latest
   ```
 
-- **Loops**: `with_items:` (not `loop:`)
+- **Loops**: `with_items:` with proper Jinja2 variable references
   ```yaml
-  with_items: homebrew_packages
+  with_items: "{{ homebrew_packages }}"
   ```
 
-- **Privilege escalation**: `sudo: yes` (not `become: yes`)
+- **Privilege escalation**: `become: yes`
 
-- **Task includes**: `include:` with inline tags (not `import_tasks:` or `include_tasks:`)
+- **Task includes**: `include_tasks:` with `tags:` on a separate line
   ```yaml
-  - include: tasks/homebrew.yml tags=homebrew
+  - include_tasks: tasks/homebrew.yml
+    tags: homebrew
   ```
 
 ### Naming
@@ -116,7 +113,8 @@ This project uses **pre-Ansible 2.0 syntax**. When making changes, maintain cons
 
 Unused tasks are **commented out** in `playbook.yml` rather than removed:
 ```yaml
-# - include: tasks/files.yml tags=files
+# - include_tasks: tasks/files.yml
+#   tags: files
 ```
 
 ## Important Notes for AI Assistants
@@ -125,15 +123,13 @@ Unused tasks are **commented out** in `playbook.yml` rather than removed:
 
 2. **No tests or CI**: There is no test suite, linting, or CI/CD pipeline. Changes should be validated by reviewing Ansible syntax manually.
 
-3. **Legacy syntax**: Do not modernize Ansible syntax unless explicitly asked. The `sudo:`, `with_items:`, and `key=value` module formats are intentional for this project's style.
+3. **macOS-only**: This playbook targets macOS exclusively. Homebrew, Homebrew Cask, and `defaults write` commands are macOS-specific.
 
-4. **macOS-only**: This playbook targets macOS exclusively. Homebrew, Homebrew Cask, and `defaults write` commands are macOS-specific.
+4. **No external dependencies**: There is no `requirements.yml`. All modules used are Ansible built-ins (`homebrew`, `homebrew_tap`, `homebrew_cask`, `npm`, `copy`, `git`, `file`, `get_url`, `command`, `shell`).
 
-5. **No external dependencies**: There is no `requirements.yml`. All modules used are Ansible built-ins (`homebrew`, `homebrew_tap`, `homebrew_cask`, `npm`, `copy`, `git`, `file`, `command`, `shell`).
+5. **Sensitive data**: The project references external secret files (`~/.secrets`, `.gitconfig.user`) that are not checked into the repository. Never add credentials or tokens to this repo.
 
-6. **Sensitive data**: The project references external secret files (`~/.secrets`, `.gitconfig.user`) that are not checked into the repository. Never add credentials or tokens to this repo.
-
-7. **The `files/osx` script** is a standalone bash script (not called by any task) containing extensive macOS `defaults write` commands. It is run manually, not via Ansible.
+6. **The `files/osx` script** is a standalone bash script (not called by any task) containing extensive macOS `defaults write` commands. It is run manually, not via Ansible.
 
 ## Common Modifications
 
@@ -167,7 +163,8 @@ npm_modules:
 
 ### Re-enabling a disabled task
 
-Uncomment the relevant line in `playbook.yml`:
+Uncomment the relevant lines in `playbook.yml`:
 ```yaml
-- include: tasks/files.yml tags=files
+- include_tasks: tasks/files.yml
+  tags: files
 ```

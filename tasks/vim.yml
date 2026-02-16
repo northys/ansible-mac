@@ -1,4 +1,9 @@
 ---
-- name: Install spf-13 vim configuration
-  shell: curl https://j.mp/spf13-vim3 -L > /tmp/spf13-vim.sh && sh /tmp/spf13-vim.sh
+- name: Download spf13-vim installer
+  get_url:
+    url: https://j.mp/spf13-vim3
+    dest: /tmp/spf13-vim.sh
+    mode: "0755"
 
+- name: Install spf13-vim configuration
+  command: sh /tmp/spf13-vim.sh

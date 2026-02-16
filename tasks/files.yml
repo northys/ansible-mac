@@ -1,11 +1,17 @@
 ---
 - name: Copy launchd.conf config to /etc/launchd.conf to set up global env vars
-  sudo: yes
-  copy: src=files/launchd.conf dest=/etc/launchd.conf owner=root group=staff mode=777
+  become: yes
+  copy:
+    src: files/launchd.conf
+    dest: /etc/launchd.conf
+    owner: root
+    group: staff
+    mode: "0644"
 
 - name: Copy solarized dark settings file
-  copy: src=files/Solarized-Dark-xterm-256color.terminal dest=/tmp/Solarized-Dark-xterm-256color.terminal
-
+  copy:
+    src: files/Solarized-Dark-xterm-256color.terminal
+    dest: /tmp/Solarized-Dark-xterm-256color.terminal
 
 - name: Set default terminal to solarized dark
   command: open /tmp/Solarized-Dark-xterm-256color.terminal
@@ -17,8 +23,13 @@
     - '"Default Window Settings" -string "Solarized-Dark-xterm-256color"'
     - '"Startup Window Settings" -string "Solarized-Dark-xterm-256color"'
 
-- name: copy dotfiles
-  copy: src="files/{{ item }}" dest="{{ home_dir }}/.{{ item }}" owner=phillipalexander group=staff mode=640
+- name: Copy dotfiles
+  copy:
+    src: "files/{{ item }}"
+    dest: "{{ home_dir }}/.{{ item }}"
+    owner: "{{ user }}"
+    group: staff
+    mode: "0640"
   with_items:
     - slate.js
     - jshintrc
